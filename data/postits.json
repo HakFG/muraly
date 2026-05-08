@@ -1,0 +1,25 @@
+[
+  {
+    "id": "1778254706836-vrma8d",
+    "texto": "Boa Noite!",
+    "cor": "#FF8A80",
+    "nickname": "Fernando",
+    "x": 35,
+    "y": 33,
+    "reacoes": {
+      "🤔": 1,
+      "❤️": 19
+    },
+    "timestamp": 1778254706838
+  },
+  {
+    "id": "1778254762794-ulvc91",
+    "texto": "Olá!",
+    "cor": "#FFEB3B",
+    "nickname": "Pedro",
+    "x": 20,
+    "y": 246,
+    "reacoes": {},
+    "timestamp": 1778254762794
+  }
+]

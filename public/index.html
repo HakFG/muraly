@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muraly — Quadro Colaborativo</title>
+
+  <!-- Caveat: estilo manuscrito para os post-its -->
+  <!-- Outfit: interface limpa e moderna -->
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- html2canvas: captura o board como PNG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Socket.IO: servido pelo Node.js -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+  <script defer src="client.js"></script>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       TOOLBAR
+  ════════════════════════════════════════════════ -->
+  <header class="toolbar" id="toolbar">
+
+    <div class="toolbar-brand">
+      <span class="toolbar-pin">📌</span>
+      <h1 class="toolbar-title">Muraly</h1>
+    </div>
+
+    <!-- Indicador online -->
+    <div class="toolbar-meta">
+      <span class="online-indicator"></span>
+      <span id="onlineCount">1</span> online
+    </div>
+
+    <div class="toolbar-sep"></div>
+
+    <!-- Badge de contagem de post-its -->
+    <span class="postit-count-badge" id="postitCount"></span>
+
+    <!-- Busca no mural -->
+    <div class="search-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Buscar no mural..."
+        autocomplete="off"
+        maxlength="80"
+      >
+    </div>
+
+    <div class="toolbar-sep"></div>
+
+    <div class="toolbar-actions">
+
+      <!-- Modo apresentação -->
+      <button id="presentBtn" class="btn-icon" title="Modo apresentação">⛶</button>
+
+      <!-- Exportar PNG -->
+      <button id="exportBtn" class="btn-icon" title="Baixar PNG do mural">⬇</button>
+
+      <!-- Novo post-it -->
+      <button id="addPostitBtn" class="btn-primary">+ Novo post-it</button>
+
+    </div>
+  </header>
+
+  <!-- Botão de saída do modo apresentação -->
+  <button id="exitPresentBtn" class="exit-present hidden" title="Sair do modo apresentação">✕ Sair</button>
+
+  <!-- ═══════════════════════════════════════════════
+       BOARD
+  ════════════════════════════════════════════════ -->
+  <main id="board" class="board">
+
+    <!-- Estado vazio -->
+    <div class="board-empty" id="emptyMsg">
+      <div class="board-empty-icon">📌</div>
+      <p>O mural está em branco.</p>
+      <p>Seja o primeiro a colar um post-it! 👆</p>
+    </div>
+
+    <!-- Estado: busca sem resultados -->
+    <div class="board-no-results" id="noResultsMsg">
+      <div class="board-empty-icon">🔍</div>
+      <p>Nenhum post-it encontrado para essa busca.</p>
+    </div>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════
+       TOAST — ícone + texto
+  ════════════════════════════════════════════════ -->
+  <div id="toast" class="toast hidden">
+    <span class="toast-icon"></span>
+    <span class="toast-text"></span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       INDICADOR DE DIGITAÇÃO
+  ════════════════════════════════════════════════ -->
+  <div id="typingIndicator" class="typing-indicator">
+    <div class="typing-dots">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+    <span id="typingText">Alguém está escrevendo...</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL — Criação e edição
+       Campos: nickname, texto, preview, cores, submit
+  ════════════════════════════════════════════════ -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Novo post-it</h2>
+        <button class="modal-close" id="closeModal" aria-label="Fechar">✕</button>
+      </div>
+
+      <!-- Apelido -->
+      <div class="field">
+        <label for="nickname">Seu nome <span class="optional">(opcional)</span></label>
+        <input
+          type="text"
+          id="nickname"
+          placeholder="Como você quer ser chamado?"
+          maxlength="30"
+          autocomplete="off"
+        >
+      </div>
+
+      <!-- Mensagem -->
+      <div class="field">
+        <label for="postText">Mensagem <span class="required">*</span></label>
+        <textarea
+          id="postText"
+          placeholder="O que você quer dizer?"
+          rows="4"
+          maxlength="200"
+        ></textarea>
+        <span class="char-count"><span id="charCount">0</span>/200</span>
+      </div>
+
+      <!-- Preview em tempo real -->
+      <div class="field">
+        <label>Preview</label>
+        <div id="postitPreview" class="postit-preview" style="background:#FFEB3B">
+          Seu texto aparece aqui...
+        </div>
+      </div>
+
+      <!-- Paleta de cores -->
+      <div class="field">
+        <label>Cor do post-it</label>
+        <div class="color-palette">
+          <button class="color-swatch selected" data-color="#FFEB3B" style="background:#FFEB3B" aria-label="Amarelo"></button>
+          <button class="color-swatch" data-color="#FF8A80" style="background:#FF8A80" aria-label="Rosa"></button>
+          <button class="color-swatch" data-color="#80D8FF" style="background:#80D8FF" aria-label="Azul"></button>
+          <button class="color-swatch" data-color="#CCFF90" style="background:#CCFF90" aria-label="Verde"></button>
+          <button class="color-swatch" data-color="#FFD180" style="background:#FFD180" aria-label="Laranja"></button>
+          <button class="color-swatch" data-color="#EA80FC" style="background:#EA80FC" aria-label="Lilás"></button>
+          <button class="color-swatch" data-color="#ffffff" style="background:#fff;border:1px solid #ccc" aria-label="Branco"></button>
+          <input type="color" id="postColor" value="#FFEB3B" title="Cor personalizada">
+        </div>
+      </div>
+
+      <button id="submitPostit" class="btn-submit">Colar no mural</button>
+
+    </div>
+  </div>
+
+</body>
+</html>

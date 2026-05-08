@@ -1,0 +1,989 @@
+/* ═══════════════════════════════════════════════
+   MURALY — style.css  (v2)
+   Organização:
+   1.  Variáveis e reset
+   2.  Toolbar
+   3.  Board
+   4.  Post-it
+   5.  Sistema de reações
+   6.  Modal e formulário
+   7.  Toast
+   8.  Busca
+   9.  Modo apresentação
+   10. Animações e keyframes
+═══════════════════════════════════════════════ */
+
+
+/* ───────────────────────────────────────────────
+   1. VARIÁVEIS E RESET
+─────────────────────────────────────────────── */
+:root {
+  --color-bg:           #EDE8DC;
+  --color-toolbar:      #0d0d1a;
+  --color-toolbar-text: #f0ece0;
+  --color-accent:       #E63946;
+  --color-accent-glow:  rgba(230, 57, 70, 0.35);
+  --color-btn-primary:  #1a1a2e;
+  --color-btn-text:     #f0ece0;
+  --color-text:         #2c2c2c;
+  --color-text-muted:   #888;
+  --color-glass:        rgba(255,255,255,0.07);
+  --color-glass-border: rgba(255,255,255,0.12);
+
+  --font-ui:     'Outfit', sans-serif;
+  --font-postit: 'Caveat', cursive;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-postit:  3px 6px 18px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-postit-hover: 8px 16px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.10);
+  --shadow-modal:   0 24px 64px rgba(0,0,0,0.28), 0 4px 16px rgba(0,0,0,0.12);
+  --shadow-picker:  0 20px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10);
+  --transition:     0.2s ease;
+  --transition-spring: 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-ui);
+  background-color: var(--color-bg);
+  /* Textura de cortiça sutil */
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(255,255,255,0.55) 0%, transparent 35%),
+    radial-gradient(circle at 85% 90%, rgba(98, 0, 238, 0.06) 0%, transparent 30%),
+    repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(0,0,0,0.025) 31px),
+    repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(0,0,0,0.018) 31px);
+  background-attachment: fixed;
+  color: var(--color-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+
+/* ───────────────────────────────────────────────
+   2. TOOLBAR — Glassmorphism moderno
+─────────────────────────────────────────────── */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 28px;
+  height: 62px;
+  background: rgba(13, 13, 26, 0.92);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.04) inset;
+}
+
+.toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.toolbar-pin {
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+  animation: pinWobble 6s ease-in-out infinite;
+}
+
+.toolbar-title {
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--color-toolbar-text);
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #f0ece0, #c8c0b0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.toolbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(240,236,224,0.5);
+  white-space: nowrap;
+}
+
+/* Ponto verde pulsante */
+.online-indicator {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #4caf50;
+  box-shadow: 0 0 6px rgba(76,175,80,0.6);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+/* Separador visual */
+.toolbar-sep {
+  width: 1px; height: 24px;
+  background: rgba(255,255,255,0.10);
+  flex-shrink: 0;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Botões de ícone */
+.btn-icon {
+  background: var(--color-glass);
+  color: rgba(240,236,224,0.8);
+  border: 1px solid var(--color-glass-border);
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), transform var(--transition);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.btn-icon::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s ease;
+}
+.btn-icon:hover {
+  background: rgba(255,255,255,0.14);
+  color: white;
+  transform: translateY(-1px);
+}
+.btn-icon:active { transform: translateY(0) scale(0.95); }
+
+/* Botão "+ Novo post-it" */
+.btn-primary {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition), opacity var(--transition);
+  box-shadow: 0 2px 8px rgba(230,57,70,0.4);
+}
+.btn-primary::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--color-accent-glow);
+}
+.btn-primary:hover::before { opacity: 1; }
+.btn-primary:active { transform: translateY(0) scale(0.97); box-shadow: none; }
+
+/* Input de busca na toolbar */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 20px;
+  color: rgba(240,236,224,0.9);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 6px 12px 6px 30px;
+  outline: none;
+  width: 150px;
+  transition: width 0.3s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.search-input::placeholder { color: rgba(240,236,224,0.35); }
+.search-input:focus {
+  width: 200px;
+  background: rgba(255,255,255,0.11);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.search-icon {
+  position: absolute;
+  left: 9px;
+  font-size: 13px;
+  color: rgba(240,236,224,0.4);
+  pointer-events: none;
+}
+
+/* Badge de contagem de post-its */
+.postit-count-badge {
+  font-size: 12px;
+  color: rgba(240,236,224,0.4);
+  white-space: nowrap;
+  min-width: 24px;
+}
+
+
+/* ───────────────────────────────────────────────
+   3. BOARD
+─────────────────────────────────────────────── */
+.board {
+  min-height: calc(100vh - 62px);
+  width: 100%;
+  position: relative;
+  overflow: auto;
+}
+
+/* Estado vazio */
+.board-empty {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; padding: 100px 0;
+  color: var(--color-text-muted);
+  font-size: 16px; text-align: center;
+  pointer-events: none;
+}
+.board-empty-icon {
+  font-size: 48px;
+  opacity: 0.4;
+  animation: float 3s ease-in-out infinite;
+}
+.board-empty p { opacity: 0.6; }
+
+/* Estado de busca sem resultados */
+.board-no-results {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; padding: 80px 0;
+  color: var(--color-text-muted);
+  font-size: 15px; text-align: center;
+  pointer-events: none;
+}
+.board-no-results.visible { display: flex; }
+
+/* Post-its filtrados pela busca ficam opacos */
+.post-it.search-hidden {
+  opacity: 0.2;
+  filter: grayscale(0.6);
+  transform: rotate(var(--rotation, -1deg)) scale(0.97) !important;
+  pointer-events: none;
+}
+
+
+/* ───────────────────────────────────────────────
+   4. POST-IT
+─────────────────────────────────────────────── */
+.post-it {
+  position: absolute;
+  width: 224px;
+  min-height: 176px;
+  padding: 20px 16px 14px;
+  border-radius: 3px 24px 24px 24px;
+  box-shadow: var(--shadow-postit);
+  font-family: var(--font-postit);
+  word-wrap: break-word;
+  display: flex; flex-direction: column; gap: 8px;
+  overflow: visible;
+  transform: rotate(var(--rotation, -1deg));
+  transition:
+    transform 0.28s var(--transition-spring),
+    box-shadow 0.28s ease,
+    opacity 0.3s ease,
+    filter 0.3s ease;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  cursor: grab;
+}
+.post-it:active { cursor: grabbing; }
+
+.post-it:hover {
+  transform: rotate(0deg) translateY(-6px) scale(1.03);
+  box-shadow: var(--shadow-postit-hover);
+  z-index: 10;
+}
+
+/* "Alfinete" no canto superior esquerdo */
+.post-it::before {
+  content: '';
+  position: absolute;
+  top: -6px; left: 10px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #a0a0a0, #555);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+.post-it:hover::before {
+  transform: scale(1.15);
+}
+
+/* Sombra de dobra no canto inferior direito */
+.post-it::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 0 18px 18px;
+  border-color: transparent transparent rgba(0,0,0,0.10) transparent;
+  border-radius: 0 0 4px 0;
+}
+
+/* Nome do autor */
+.post-it-nick {
+  font-size: 13px; font-weight: 600;
+  color: rgba(0,0,0,0.45);
+  border-bottom: 1px dashed rgba(0,0,0,0.12);
+  padding-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.post-it-nick::before { content: '✍️'; font-size: 11px; }
+
+/* Texto principal */
+.post-it-text {
+  font-size: 17px; line-height: 1.45;
+  color: rgba(0,0,0,0.78);
+  flex: 1;
+  overflow-wrap: break-word;
+}
+
+/* Timestamp */
+.post-it-time {
+  font-size: 11px;
+  color: rgba(0,0,0,0.35);
+  font-family: var(--font-ui);
+  margin-top: auto;
+  letter-spacing: 0.2px;
+}
+
+/* Ícones de ação (hover) */
+.post-it-actions {
+  position: absolute;
+  top: 10px; right: 10px;
+  display: flex; gap: 4px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.post-it:hover .post-it-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.action-btn {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 6px;
+  width: 24px; height: 24px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.action-btn:hover {
+  background: rgba(255,255,255,0.85);
+  transform: scale(1.12);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.action-btn.delete:hover {
+  background: rgba(211,47,47,0.12);
+  border-color: rgba(211,47,47,0.25);
+  color: #d32f2f;
+}
+
+/* Rodapé: reações + timestamp */
+.post-it-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+  position: relative;
+}
+
+.post-it-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+
+/* ───────────────────────────────────────────────
+   5. SISTEMA DE REAÇÕES — estilo WhatsApp
+─────────────────────────────────────────────── */
+
+/* Container das reações já dadas */
+.reactions-given {
+  display: flex; flex-wrap: wrap; gap: 4px; flex: 1;
+}
+
+/* Chip de reação individual — estilo WhatsApp */
+.reaction-chip {
+  background: rgba(255,255,255,0.65);
+  border: 1.5px solid rgba(0,0,0,0.10);
+  border-radius: 99px;
+  padding: 3px 8px 3px 6px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    transform 0.2s var(--transition-spring),
+    border-color var(--transition),
+    box-shadow var(--transition);
+  display: flex; align-items: center; gap: 4px;
+  user-select: none;
+  position: relative;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+.reaction-chip:hover {
+  background: rgba(255,255,255,0.88);
+  transform: scale(1.1) translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  border-color: rgba(0,0,0,0.18);
+}
+/* Reação que o usuário deu — destaque azul estilo WhatsApp */
+.reaction-chip.reacted {
+  background: rgba(37,99,235,0.12);
+  border-color: rgba(37,99,235,0.4);
+  box-shadow: 0 0 0 1.5px rgba(37,99,235,0.15);
+}
+.reaction-chip.reacted .chip-count {
+  color: rgba(37,99,235,0.85);
+}
+
+.chip-emoji { font-size: 14px; line-height: 1; }
+
+.chip-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.55);
+  min-width: 8px;
+  text-align: center;
+  transition: transform 0.2s var(--transition-spring), color 0.2s ease;
+}
+/* Anima o número quando muda */
+.chip-count.bump {
+  animation: countBump 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Botão de adicionar reação — emoji sorridente */
+.reaction-add-btn {
+  background: rgba(0,0,0,0.04);
+  border: 1.5px dashed rgba(0,0,0,0.16);
+  border-radius: 99px;
+  width: 28px; height: 28px;
+  font-size: 14px; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    transform 0.2s var(--transition-spring);
+  color: rgba(0,0,0,0.4);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s var(--transition-spring);
+}
+.post-it:hover .reaction-add-btn,
+.reaction-add-btn:focus {
+  opacity: 1;
+}
+.reaction-add-btn:hover {
+  background: rgba(0,0,0,0.10);
+  border-color: rgba(0,0,0,0.25);
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+/* ── Picker de emojis ── */
+.emoji-picker {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12px) saturate(1.6);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 18px;
+  box-shadow: var(--shadow-picker);
+  padding: 10px 10px 6px;
+  width: 232px;
+  z-index: 500;
+  animation: pickerSlideUp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* Abas de categoria */
+.emoji-picker-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 8px;
+  background: rgba(0,0,0,0.04);
+  border-radius: 10px;
+  padding: 3px;
+}
+.emoji-tab {
+  flex: 1;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-size: 14px;
+  padding: 4px 2px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  line-height: 1;
+}
+.emoji-tab:hover { background: rgba(0,0,0,0.06); }
+.emoji-tab.active {
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  transform: scale(1.05);
+}
+
+/* Grid de emojis */
+.emoji-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.emoji-option {
+  background: none; border: none;
+  font-size: 20px; cursor: pointer;
+  width: 34px; height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  transition:
+    background var(--transition),
+    transform 0.18s var(--transition-spring);
+  position: relative;
+}
+.emoji-option:hover {
+  background: rgba(0,0,0,0.07);
+  transform: scale(1.3) translateY(-2px);
+}
+/* Emoji que o usuário já usou: marcado */
+.emoji-option.already-reacted {
+  background: rgba(255,200,0,0.2);
+  border: 1.5px solid rgba(255,200,0,0.5);
+}
+.emoji-option.already-reacted::after {
+  content: '✓';
+  position: absolute;
+  bottom: 0; right: 0;
+  font-size: 8px;
+  background: #f9a825;
+  color: white;
+  border-radius: 50%;
+  width: 10px; height: 10px;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+
+/* Totais rápidos abaixo do picker */
+.emoji-picker-footer {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  font-size: 11px;
+  color: rgba(0,0,0,0.4);
+  font-family: var(--font-ui);
+  text-align: center;
+}
+
+/* Emoji voador (animação de reação) */
+.reaction-flyer {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  font-size: 22px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 30;
+  animation: flyUp 0.8s ease forwards;
+  white-space: nowrap;
+}
+
+/* ── Indicador de digitação ── */
+.typing-indicator {
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+  z-index: 300;
+  background: rgba(13, 13, 26, 0.85);
+  backdrop-filter: blur(8px);
+  color: rgba(240,236,224,0.85);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.typing-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.typing-dots {
+  display: flex; gap: 3px;
+}
+.typing-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(240,236,224,0.7);
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+
+/* ───────────────────────────────────────────────
+   6. MODAL E FORMULÁRIO
+─────────────────────────────────────────────── */
+.modal {
+  position: fixed; inset: 0;
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal.hidden { display: none; }
+
+.modal-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  position: relative; z-index: 1;
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 28px 26px;
+  width: 100%; max-width: 420px;
+  box-shadow: var(--shadow-modal);
+  display: flex; flex-direction: column; gap: 18px;
+  animation: modalIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title {
+  font-size: 18px; font-weight: 600;
+  background: linear-gradient(135deg, #1a1a2e, #3a3a5e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modal-close {
+  background: #f0f0f0; border: none; font-size: 14px;
+  color: var(--color-text-muted); cursor: pointer;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  transition: color var(--transition), background var(--transition), transform var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover {
+  color: var(--color-text);
+  background: #e0e0e0;
+  transform: rotate(90deg);
+}
+
+.field { display: flex; flex-direction: column; gap: 7px; position: relative; }
+
+.field label {
+  font-size: 12px; font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+}
+.optional { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.required { color: var(--color-accent); }
+
+.field input[type="text"],
+.field textarea {
+  font-family: var(--font-ui); font-size: 15px;
+  padding: 11px 13px;
+  border: 2px solid #ebebeb;
+  border-radius: var(--radius-md);
+  outline: none; resize: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: var(--color-text);
+  background: #fafafa;
+}
+.field input[type="text"]:focus,
+.field textarea:focus {
+  border-color: var(--color-btn-primary);
+  box-shadow: 0 0 0 3px rgba(26,26,46,0.07);
+  background: white;
+}
+
+/* Preview do post-it no modal */
+.postit-preview {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  font-family: var(--font-postit);
+  font-size: 16px;
+  min-height: 60px;
+  color: rgba(0,0,0,0.75);
+  border: 2px dashed rgba(0,0,0,0.10);
+  transition: background 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  line-height: 1.4;
+}
+.postit-preview::before {
+  content: 'Preview';
+  position: absolute; top: 6px; right: 8px;
+  font-size: 10px; font-family: var(--font-ui);
+  color: rgba(0,0,0,0.25);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.char-count {
+  font-size: 12px; color: var(--color-text-muted);
+  text-align: right;
+  transition: color 0.2s ease;
+}
+.char-count.near-limit { color: #e65100; }
+.char-count.at-limit   { color: var(--color-accent); font-weight: 600; }
+
+/* Paleta de cores */
+.color-palette {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s var(--transition-spring), border-color 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+.color-swatch:hover { transform: scale(1.18); }
+.color-swatch.selected {
+  border-color: #333;
+  transform: scale(1.18);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+#postColor {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid #ddd; padding: 0;
+  cursor: pointer; background: none;
+  overflow: hidden; flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+#postColor:hover { transform: scale(1.15); }
+
+/* Botão de submissão */
+.btn-submit {
+  background: linear-gradient(135deg, #1a1a2e, #2d2d5e);
+  color: var(--color-btn-text);
+  border: none; padding: 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: 15px; font-weight: 500;
+  cursor: pointer; margin-top: 2px;
+  transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 4px 12px rgba(26,26,46,0.3);
+  position: relative; overflow: hidden;
+}
+.btn-submit::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+}
+.btn-submit:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,26,46,0.35); }
+.btn-submit:active { transform: scale(0.98); }
+
+
+/* ───────────────────────────────────────────────
+   7. TOAST — Notificação flutuante
+─────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  z-index: 400;
+  padding: 12px 20px 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 500;
+  color: white;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.12);
+  display: flex; align-items: center; gap: 10px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 320px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.toast-icon { font-size: 16px; flex-shrink: 0; }
+.toast.hidden   { opacity: 0; pointer-events: none; transform: translateY(12px); }
+.toast.error    { background: linear-gradient(135deg, #c62828, #d32f2f); }
+.toast.success  { background: linear-gradient(135deg, #2e7d32, #388e3c); }
+.toast.info     { background: linear-gradient(135deg, #1565c0, #1976d2); }
+
+
+/* ───────────────────────────────────────────────
+   8. MODO APRESENTAÇÃO
+─────────────────────────────────────────────── */
+body.presentation-mode .toolbar { display: none; }
+body.presentation-mode .board   { min-height: 100vh; }
+body.presentation-mode .post-it-actions { display: none !important; }
+body.presentation-mode .reaction-add-btn { display: none !important; }
+
+.exit-present {
+  position: fixed; top: 16px; right: 16px; z-index: 500;
+  background: rgba(13,13,26,0.75);
+  backdrop-filter: blur(8px);
+  color: white; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px; font-size: 14px; cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+  font-family: var(--font-ui);
+}
+.exit-present:hover  { background: rgba(13,13,26,0.95); transform: scale(1.02); }
+.exit-present.hidden { display: none; }
+
+
+/* ───────────────────────────────────────────────
+   10. ANIMAÇÕES E KEYFRAMES
+─────────────────────────────────────────────── */
+
+/* Entrada dos post-its */
+@keyframes popIn {
+  0%   { opacity: 0; transform: rotate(var(--rotation, -1deg)) scale(0.65) translateY(8px); }
+  70%  { opacity: 1; transform: rotate(var(--rotation, -1deg)) scale(1.04); }
+  100% { opacity: 1; transform: rotate(var(--rotation, -1deg)) scale(1); }
+}
+
+/* Entrada do modal */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Entrada do picker de emojis */
+@keyframes pickerSlideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Pulso do indicador online */
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(76,175,80,0.6); }
+  50%       { opacity: 0.65; box-shadow: 0 0 12px rgba(76,175,80,0.3); }
+}
+
+/* Balanço do pin no logo */
+@keyframes pinWobble {
+  0%, 100% { transform: rotate(0deg); }
+  20%       { transform: rotate(-8deg); }
+  40%       { transform: rotate(6deg); }
+  60%       { transform: rotate(-4deg); }
+  80%       { transform: rotate(2deg); }
+}
+
+/* Emoji voando para cima ao reagir */
+@keyframes flyUp {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(0) scale(0.5); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1.3); }
+  70%  { opacity: 1; transform: translateX(-50%) translateY(-55px) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-75px) scale(0.8); }
+}
+
+/* Pop do emoji ao clicar */
+@keyframes emojiPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.5) rotate(-8deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Bump do número de reações */
+@keyframes countBump {
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(-4px) scale(1.25); }
+  70%  { transform: translateY(1px) scale(0.95); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Float da mensagem de board vazio */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* Bounce das bolinhas de digitação */
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40%            { transform: translateY(-5px); opacity: 1; }
+}
+
+/* Confete (partícula) */
+.confetti-particle {
+  position: fixed;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: confettiFall var(--duration, 1.2s) ease forwards;
+}
+
+@keyframes confettiFall {
+  0%   { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+  100% {
+    opacity: 0;
+    transform:
+      translate(var(--tx, 40px), var(--ty, 200px))
+      rotate(var(--r, 360deg))
+      scale(0.4);
+  }
+}
+
+
+/* ───────────────────────────────────────────────
+   RESPONSIVIDADE
+─────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .toolbar { padding: 0 14px; gap: 8px; }
+  .toolbar-title { font-size: 17px; }
+  .search-input { width: 110px; }
+  .search-input:focus { width: 140px; }
+  .postit-count-badge { display: none; }
+  .toolbar-sep { display: none; }
+  .board { padding: 20px 14px; gap: 16px; }
+  .post-it { width: calc(50vw - 24px); min-width: 150px; }
+}
