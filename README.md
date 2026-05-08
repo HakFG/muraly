@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📌 Muraly — Quadro Colaborativo em Tempo Real
 
 > Um mural de post-its virtual onde qualquer pessoa pode colar uma mensagem colorida — sem login, sem cadastro, sem complicação.  
